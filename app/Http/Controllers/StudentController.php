@@ -127,11 +127,12 @@ class StudentController extends Controller
     {
         $data = $request->validate([
             'intended_move_in_date' => 'required|date|after_or_equal:today',
-            'payment_method'        => 'required|string|in:GCash,Maya,Cash,Bank Transfer',
+            'payment_method'        => 'required|string|in:GCash,Maya,Cash,Cash Upon Move-in,Bank Transfer',
             'deposit_amount'        => 'nullable|numeric|min:0',
             'payment_reference'     => 'nullable|string|max:100',
             'receipt_file'          => 'nullable|image|max:10240',
             'remarks'               => 'nullable|string|max:500',
+            'agree_policy'          => 'nullable|accepted',
         ]);
 
         $receiptUrl = null;

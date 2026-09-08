@@ -41,23 +41,52 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-200 bg-white py-8 mt-auto">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-        <div class="flex items-center gap-2">
-          <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-          <span class="font-medium">KidaBoard • Smart Web-Based Boarding House Search & Reservation System</span>
+    <footer class="border-t border-slate-200 bg-white py-10 mt-auto">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-6 pb-6 border-b border-slate-100">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-xs shadow-sm">
+              KB
+            </div>
+            <div>
+              <p class="text-sm font-extrabold text-slate-900 leading-tight">Kida<span class="text-indigo-600">Board</span></p>
+              <p class="text-[11px] text-slate-500">Kidapawan City Smart Student Accommodation Portal</p>
+            </div>
+          </div>
+
+          <!-- Legal & Resource Links -->
+          <nav aria-label="Legal & Information" class="flex flex-wrap items-center justify-center gap-y-2 gap-x-5 text-xs font-semibold text-slate-600">
+            <a href="/privacy-policy" class="hover:text-indigo-600 transition">Privacy Policy</a>
+            <span class="text-slate-300">•</span>
+            <a href="/terms" class="hover:text-indigo-600 transition">Terms & Conditions</a>
+            <span class="text-slate-300">•</span>
+            <a href="/refund-policy" class="hover:text-indigo-600 transition">Refund Policy</a>
+            <span class="text-slate-300">•</span>
+            <a href="/cookie-policy" class="hover:text-indigo-600 transition">Cookie Policy</a>
+          </nav>
         </div>
-        <div>
-          &copy; 2026 Kidapawan City Student Housing Initiative. All rights reserved.
+
+        <div class="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+          <div class="flex items-center gap-2">
+            <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span>RA 10173 Compliant • Kidapawan City Housing Network</span>
+          </div>
+          <div>
+            &copy; 2026 KidaBoard Student Housing Initiative. All rights reserved.
+          </div>
         </div>
       </div>
     </footer>
+
+    <!-- Cookie Consent Banner -->
+    <CookieConsent />
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue';
 import { usePage, Link } from '@inertiajs/vue3';
+import CookieConsent from '@/Components/CookieConsent.vue';
 
 const page = usePage();
 const user = computed(() => page.props.auth?.user);

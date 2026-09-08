@@ -125,7 +125,9 @@
             <a
               :href="house.map_url || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(house.name + ' ' + house.address + ' Kidapawan City')}`"
               target="_blank"
-              class="w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition"
+              rel="noopener noreferrer"
+              referrerpolicy="no-referrer-when-downgrade"
+              class="w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
             >
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               View Location on Map ↗
@@ -208,29 +210,40 @@
     </div>
 
     <!-- Free Viewing Appointment Modal -->
-    <div v-if="showAppointmentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+    <div
+      v-if="showAppointmentModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="appointment-modal-title"
+      @keydown.esc="showAppointmentModal = false"
+      tabindex="-1"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+    >
       <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-md w-full border border-slate-200 shadow-2xl animate-in fade-in duration-150">
         <div class="mb-4">
           <div>
-            <h3 class="text-lg font-black text-slate-900">Schedule In-Person Viewing</h3>
+            <h3 id="appointment-modal-title" class="text-lg font-black text-slate-900">Schedule In-Person Viewing</h3>
             <p class="text-xs text-slate-500">Free inspection tour at {{ house.name }} (No payment needed)</p>
           </div>
         </div>
 
         <form @submit.prevent="submitAppointment" class="space-y-4">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Preferred Date *</label>
+            <label for="appointment-date" class="block text-xs font-bold text-slate-700 mb-1">Preferred Date *</label>
             <input
+              id="appointment-date"
               v-model="appointmentForm.scheduled_date"
               type="date"
               required
+              aria-required="true"
               class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Time Slot *</label>
+            <label for="appointment-time" class="block text-xs font-bold text-slate-700 mb-1">Time Slot *</label>
             <select
+              id="appointment-time"
               v-model="appointmentForm.time_slot"
               class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             >
@@ -241,8 +254,9 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Notes / Questions to Landlord</label>
+            <label for="appointment-notes" class="block text-xs font-bold text-slate-700 mb-1">Notes / Questions to Landlord</label>
             <textarea
+              id="appointment-notes"
               v-model="appointmentForm.notes"
               rows="2"
               placeholder="e.g. Inquiring about gate curfew, parking, or companion inspection..."
@@ -251,37 +265,58 @@
           </div>
 
           <div class="flex items-center justify-end gap-2.5 pt-2">
-            <button type="button" @click="showAppointmentModal = false" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer">Cancel</button>
-            <button type="submit" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-md shadow-indigo-600/20 cursor-pointer">Submit Request</button>
+            <button
+              type="button"
+              @click="showAppointmentModal = false"
+              class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-md shadow-indigo-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 cursor-pointer"
+            >
+              Submit Request
+            </button>
           </div>
         </form>
       </div>
     </div>
 
     <!-- Room Reservation & Payment Modal -->
-    <div v-if="showReservationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+    <div
+      v-if="showReservationModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reservation-modal-title"
+      @keydown.esc="showReservationModal = false"
+      tabindex="-1"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs"
+    >
       <div class="bg-white rounded-3xl p-6 sm:p-7 max-w-lg w-full border border-slate-200 shadow-2xl animate-in fade-in duration-150 max-h-[90vh] overflow-y-auto">
         <div class="mb-4">
           <div>
-            <h3 class="text-lg font-black text-slate-900">Reserve Room {{ selectedRoom?.room_number }}</h3>
+            <h3 id="reservation-modal-title" class="text-lg font-black text-slate-900">Reserve Room {{ selectedRoom?.room_number }}</h3>
             <p class="text-xs text-slate-500">{{ selectedRoom?.room_type }} • ₱{{ formatNumber(selectedRoom?.monthly_rent) }}/month</p>
           </div>
         </div>
 
         <form @submit.prevent="submitReservation" class="space-y-4">
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Intended Move-in Date *</label>
+            <label for="reservation-date" class="block text-xs font-bold text-slate-700 mb-1">Intended Move-in Date *</label>
             <input
+              id="reservation-date"
               v-model="reservationForm.intended_move_in_date"
               type="date"
               required
+              aria-required="true"
               class="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
             />
           </div>
 
           <!-- Payment Method Selection -->
-          <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Payment Method *</label>
+          <fieldset>
+            <legend class="block text-xs font-bold text-slate-700 mb-1">Payment Method *</legend>
             <div class="grid grid-cols-2 gap-2">
               <label
                 v-for="pm in ['GCash', 'Maya', 'Cash Upon Move-in', 'Bank Transfer']"
@@ -293,7 +328,7 @@
                 <span>{{ pm }}</span>
               </label>
             </div>
-          </div>
+          </fieldset>
 
           <!-- Digital Payment Info Box (GCash / Maya) -->
           <div v-if="reservationForm.payment_method === 'GCash' || reservationForm.payment_method === 'Maya'" class="p-3.5 rounded-2xl bg-indigo-50 border border-indigo-100 text-xs text-indigo-900 space-y-2">
@@ -308,8 +343,9 @@
 
           <!-- Payment Reference Field (for digital transfers) -->
           <div v-if="reservationForm.payment_method !== 'Cash Upon Move-in'">
-            <label class="block text-xs font-bold text-slate-700 mb-1">Reference Number / Txn ID</label>
+            <label for="reservation-ref" class="block text-xs font-bold text-slate-700 mb-1">Reference Number / Txn ID</label>
             <input
+              id="reservation-ref"
               v-model="reservationForm.payment_reference"
               type="text"
               placeholder="e.g. 100234891234"
@@ -320,7 +356,7 @@
           <!-- Upload Receipt File from Device -->
           <div v-if="reservationForm.payment_method !== 'Cash Upon Move-in'">
             <label class="block text-xs font-bold text-slate-700 mb-1">Proof of Payment (Upload Receipt from Phone / Laptop)</label>
-            <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-3 bg-slate-50/50 hover:bg-indigo-50/20 cursor-pointer transition">
+            <label class="flex flex-col items-center justify-center border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-3 bg-slate-50/50 hover:bg-indigo-50/20 cursor-pointer transition focus-within:ring-2 focus-within:ring-indigo-500">
               <svg class="w-6 h-6 text-indigo-500 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -330,8 +366,9 @@
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 mb-1">Remarks or Note to Landlord</label>
+            <label for="reservation-remarks" class="block text-xs font-bold text-slate-700 mb-1">Remarks or Note to Landlord</label>
             <textarea
+              id="reservation-remarks"
               v-model="reservationForm.remarks"
               rows="2"
               placeholder="e.g. Requesting quiet study corner, bringing laptop..."
@@ -339,9 +376,37 @@
             ></textarea>
           </div>
 
+          <!-- Explicit Consent Checkbox -->
+          <div class="pt-2 border-t border-slate-100">
+            <label for="reservation-consent" class="flex items-start gap-2.5 cursor-pointer text-xs text-slate-600 leading-snug select-none">
+              <input
+                id="reservation-consent"
+                type="checkbox"
+                v-model="reservationForm.agree_policy"
+                required
+                aria-required="true"
+                class="mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 transition shrink-0 cursor-pointer"
+              />
+              <span>
+                I agree to the <a href="/refund-policy" target="_blank" class="text-indigo-600 font-bold hover:underline">Refund &amp; Cancellation Policy</a>, acknowledge the house rules, and verify that my submitted details are accurate.
+              </span>
+            </label>
+          </div>
+
           <div class="flex items-center justify-end gap-2.5 pt-2">
-            <button type="button" @click="showReservationModal = false" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer">Cancel</button>
-            <button type="submit" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-md shadow-emerald-600/20 cursor-pointer">Submit Reservation & Payment</button>
+            <button
+              type="button"
+              @click="showReservationModal = false"
+              class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-md shadow-emerald-600/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer"
+            >
+              Submit Reservation & Payment
+            </button>
           </div>
         </form>
       </div>
@@ -377,6 +442,7 @@ const reservationForm = reactive({
   deposit_amount: 0,
   payment_reference: '',
   remarks: '',
+  agree_policy: false,
 });
 
 function defaultRoomImage(type) {
@@ -405,6 +471,7 @@ function submitAppointment() {
 function openReservationModal(room) {
   selectedRoom.value = room;
   reservationForm.deposit_amount = room.monthly_rent;
+  reservationForm.agree_policy = false;
   receiptFile.value = null;
   showReservationModal.value = true;
 }
@@ -418,6 +485,7 @@ function submitReservation() {
   formData.append('deposit_amount', reservationForm.deposit_amount);
   formData.append('payment_reference', reservationForm.payment_reference || '');
   formData.append('remarks', reservationForm.remarks || '');
+  formData.append('agree_policy', reservationForm.agree_policy ? '1' : '');
 
   if (receiptFile.value) {
     formData.append('receipt_file', receiptFile.value);

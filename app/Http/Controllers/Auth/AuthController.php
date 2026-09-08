@@ -67,6 +67,9 @@ class AuthController extends Controller
             'role'                  => ['required', 'in:student,owner'],
             'password'              => ['required', 'min:8', 'confirmed'],
             'password_confirmation' => ['required'],
+            'terms'                 => ['accepted'],
+        ], [
+            'terms.accepted'        => 'You must agree to the Terms & Conditions and acknowledge the Privacy Policy to create an account.',
         ]);
 
         // Generate a 6-digit OTP

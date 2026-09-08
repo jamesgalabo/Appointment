@@ -73,7 +73,12 @@
                 placeholder="••••••••••••"
                 class="w-full pl-11 pr-11 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               />
-              <button type="button" @click="showPass = !showPass" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600">
+              <button
+                type="button"
+                @click="showPass = !showPass"
+                :aria-label="showPass ? 'Hide password' : 'Show password'"
+                class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 focus-visible:outline-none focus-visible:text-indigo-600 cursor-pointer"
+              >
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path v-if="!showPass" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   <path v-if="!showPass" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -84,14 +89,14 @@
           </div>
 
           <div class="flex items-center gap-2 pt-1">
-            <input v-model="form.remember" type="checkbox" id="remember" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-            <label for="remember" class="text-xs font-medium text-slate-600 cursor-pointer">Remember me</label>
+            <input v-model="form.remember" type="checkbox" id="remember" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+            <label for="remember" class="text-xs font-medium text-slate-600 cursor-pointer select-none">Remember me</label>
           </div>
 
           <button
             type="submit"
             :disabled="loading"
-            class="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md shadow-indigo-500/25 transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60"
+            class="w-full py-3.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-md shadow-indigo-500/25 transition duration-200 flex items-center justify-center gap-2 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 cursor-pointer"
           >
             <svg v-if="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -104,11 +109,18 @@
           </button>
         </form>
 
-
         <p class="text-center text-xs text-slate-600 mt-5 font-medium">
           Don't have an account?
           <a href="/register" class="text-indigo-600 hover:text-indigo-700 font-bold transition">Register here</a>
         </p>
+
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center gap-3 text-[11px] text-slate-400">
+          <a href="/privacy-policy" target="_blank" class="hover:text-indigo-600 transition">Privacy Policy</a>
+          <span>•</span>
+          <a href="/terms" target="_blank" class="hover:text-indigo-600 transition">Terms of Service</a>
+          <span>•</span>
+          <a href="/cookie-policy" target="_blank" class="hover:text-indigo-600 transition">Cookie Notice</a>
+        </div>
       </div>
     </div>
   </div>

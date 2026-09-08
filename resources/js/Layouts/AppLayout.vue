@@ -158,6 +158,20 @@
       <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
         <slot />
       </main>
+
+      <!-- App Bottom Legal Footer -->
+      <footer class="mt-auto border-t border-slate-200/60 py-4 px-6 text-[11px] text-slate-400 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <span>&copy; 2026 KidaBoard • Kidapawan City Student Housing</span>
+        <div class="flex items-center gap-3 font-medium">
+          <a href="/privacy-policy" target="_blank" class="hover:text-indigo-600 transition">Privacy Notice</a>
+          <span>•</span>
+          <a href="/terms" target="_blank" class="hover:text-indigo-600 transition">Terms</a>
+          <span>•</span>
+          <a href="/refund-policy" target="_blank" class="hover:text-indigo-600 transition">Refunds</a>
+          <span>•</span>
+          <a href="/cookie-policy" target="_blank" class="hover:text-indigo-600 transition">Cookies</a>
+        </div>
+      </footer>
     </div>
 
     <!-- Confirm Sign Out Modal -->
@@ -173,11 +187,15 @@
       @cancel="showLogoutModal = false"
       @update:show="showLogoutModal = $event"
     />
+
+    <!-- Cookie Consent Banner -->
+    <CookieConsent />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue';
+import CookieConsent from '@/Components/CookieConsent.vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { getNavigationForRole, NAV_ICONS } from '@/Config/navigation.js';
 import ConfirmModal from '@/Components/ConfirmModal.vue';

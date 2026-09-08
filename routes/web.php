@@ -25,6 +25,11 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+Route::get('/privacy-policy', fn () => Inertia::render('Legal/Index', ['initialTab' => 'privacy']))->name('legal.privacy');
+Route::get('/terms', fn () => Inertia::render('Legal/Index', ['initialTab' => 'terms']))->name('legal.terms');
+Route::get('/refund-policy', fn () => Inertia::render('Legal/Index', ['initialTab' => 'refund']))->name('legal.refund');
+Route::get('/cookie-policy', fn () => Inertia::render('Legal/Index', ['initialTab' => 'cookies']))->name('legal.cookies');
+
 /*
 |--------------------------------------------------------------------------
 | Authentication Routes
