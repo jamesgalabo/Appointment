@@ -111,33 +111,44 @@
           </Link>
         </div>
 
-        <div v-if="rooms && rooms.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3.5">
+        <div v-if="rooms && rooms.length > 0" class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-3.5">
           <div
             v-for="room in rooms"
             :key="room.id"
             :class="room.availability_status === 'available'
-              ? 'bg-emerald-50/70 border-emerald-200 hover:border-emerald-300'
+              ? 'bg-emerald-50/60 border-emerald-200/90 hover:border-emerald-300'
               : room.availability_status === 'occupied'
-              ? 'bg-rose-50/70 border-rose-200 hover:border-rose-300'
-              : 'bg-amber-50/70 border-amber-200 hover:border-amber-300'"
+              ? 'bg-rose-50/60 border-rose-200/90 hover:border-rose-300'
+              : 'bg-amber-50/60 border-amber-200/90 hover:border-amber-300'"
             class="p-3.5 rounded-xl border transition duration-150 flex flex-col justify-between"
           >
-            <div class="flex items-start justify-between mb-2">
-              <div>
-                <span class="text-lg font-black text-slate-900">#{{ room.room_number }}</span>
-                <p class="text-[11px] text-slate-600 font-medium truncate">{{ room.room_type }}</p>
+            <div>
+              <div class="flex items-center justify-between gap-1.5 mb-1">
+                <span class="text-sm font-black text-slate-900 truncate" :title="displayRoomNumber(room.room_number)">
+                  {{ displayRoomNumber(room.room_number) }}
+                </span>
+                <span
+                  :class="room.availability_status === 'available'
+                    ? 'bg-emerald-100 text-emerald-800 border-emerald-200'
+                    : room.availability_status === 'occupied'
+                    ? 'bg-rose-100 text-rose-800 border-rose-200'
+                    : 'bg-amber-100 text-amber-800 border-amber-200'"
+                  class="text-[10px] font-extrabold px-1.5 py-0.5 rounded-md border capitalize shrink-0 leading-none"
+                >
+                  {{ room.availability_status?.replace('_', ' ') }}
+                </span>
               </div>
-              <span class="text-xs font-bold text-slate-900">₱{{ formatNumber(room.monthly_rent) }}<span class="text-[10px] text-slate-500 font-normal">/mo</span></span>
+              <p class="text-[11px] text-slate-500 font-medium truncate mb-2.5">
+                {{ room.room_type }} • {{ room.capacity }} pax
+              </p>
             </div>
 
-            <div class="flex items-center justify-between text-[11px] pt-2 border-t border-slate-200/50 mt-1">
-              <span
-                :class="room.availability_status === 'available' ? 'text-emerald-700 font-bold' : room.availability_status === 'occupied' ? 'text-rose-700 font-bold' : 'text-amber-700 font-bold'"
-                class="capitalize"
-              >
-                ● {{ room.availability_status?.replace('_', ' ') }}
-              </span>
-              <span class="text-slate-500 font-semibold">{{ room.capacity }} pax</span>
+            <div class="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Rent</span>
+              <div class="text-right shrink-0">
+                <span class="text-xs sm:text-sm font-black text-indigo-700">₱{{ formatNumber(room.monthly_rent) }}</span>
+                <span class="text-[10px] text-slate-500 font-medium">/mo</span>
+              </div>
             </div>
           </div>
         </div>
@@ -180,7 +191,7 @@
             </div>
             <p class="text-[11px] text-slate-500 font-medium flex items-center gap-1">
               <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              {{ apt.scheduled_date }} • {{ apt.time_slot }}
+              {{ formatDate(apt.scheduled_date) }} • {{ apt.time_slot }}
             </p>
             <p v-if="apt.student?.phone" class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
               <svg class="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
@@ -224,6 +235,26 @@ const estimatedMonthlyRevenue = computed(() => {
 
 function formatNumber(val) {
   return Number(val || 0).toLocaleString();
+}
+
+function displayRoomNumber(val) {
+  if (!val) return '';
+  const str = String(val).trim();
+  if (/^room\b/i.test(str)) {
+    return str;
+  }
+  return 'Room ' + str;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch (e) {
+    return dateStr;
+  }
 }
 
 const statusColors = {
