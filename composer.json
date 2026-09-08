@@ -7,7 +7,9 @@
     "license": "MIT",
     "require": {
         "php": "^8.3",
+        "inertiajs/inertia-laravel": "^3.3",
         "laravel/framework": "^13.17",
+        "laravel/reverb": "^1.11",
         "laravel/tinker": "^3.0"
     },
     "require-dev": {
@@ -42,6 +44,7 @@
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
+            "@php artisan migrate --graceful --ansi || true",
             "@php artisan dev"
         ],
         "test": [
@@ -74,7 +77,7 @@
     },
     "config": {
         "optimize-autoloader": true,
-        "preferred-install": "dist",
+        "preferred-install": "source",
         "sort-packages": true,
         "allow-plugins": {
             "pestphp/pest-plugin": true,
