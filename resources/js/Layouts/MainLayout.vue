@@ -2,15 +2,15 @@
   <div class="min-h-screen bg-slate-50 text-slate-800 flex flex-col selection:bg-indigo-600 selection:text-white antialiased">
     <!-- Top Navigation Header -->
     <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-2xs">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-3 group">
-          <img src="/favicon.svg" alt="KidaBoard" class="w-10 h-10 rounded-xl shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300 object-cover">
-          <div>
-            <div class="flex items-center gap-2">
-              <span class="text-xl font-extrabold tracking-tight text-slate-900">Kida<span class="text-indigo-600">Board</span></span>
-              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">Kidapawan</span>
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+        <a href="/" class="flex items-center gap-2.5 sm:gap-3 group shrink-0 min-w-0">
+          <img src="/favicon.svg" alt="KidaBoard" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300 object-cover shrink-0">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 whitespace-nowrap">Kida<span class="text-indigo-600">Board</span></span>
+              <span class="hidden sm:inline-block text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">Kidapawan</span>
             </div>
-            <p class="text-[11px] text-slate-500 leading-none">Smart Student Accommodation Platform</p>
+            <p class="hidden sm:block text-[11px] text-slate-500 leading-none truncate">Smart Student Accommodation Platform</p>
           </div>
         </a>
 
@@ -22,14 +22,14 @@
           <Link :href="user ? dashboardUrl : '/login'" class="text-sm font-semibold text-slate-700 hover:text-indigo-600 transition">Reservations</Link>
         </div>
 
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <template v-if="user">
-            <Link :href="dashboardUrl" class="px-4 py-2 text-sm font-bold text-indigo-600 hover:text-indigo-700 transition">Dashboard</Link>
-            <Link href="/logout" method="post" as="button" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-rose-600 transition">Sign Out</Link>
+            <Link :href="dashboardUrl" class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-bold text-indigo-600 hover:text-indigo-700 transition whitespace-nowrap">Dashboard</Link>
+            <Link href="/logout" method="post" as="button" class="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-rose-600 transition whitespace-nowrap">Sign Out</Link>
           </template>
           <template v-else>
-            <Link href="/login" class="px-4 py-2 text-sm font-semibold text-slate-700 hover:text-indigo-600 transition">Sign In</Link>
-            <Link href="/register" class="px-5 py-2.5 text-sm font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition">Get Started</Link>
+            <Link href="/login" class="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm font-semibold text-slate-700 hover:text-indigo-600 transition whitespace-nowrap">Sign In</Link>
+            <Link href="/register" class="px-3 py-1.5 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm sm:shadow-md sm:shadow-indigo-500/20 transition whitespace-nowrap">Get Started</Link>
           </template>
         </div>
       </div>
