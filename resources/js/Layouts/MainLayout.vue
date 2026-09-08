@@ -4,9 +4,7 @@
     <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-2xs">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <a href="/" class="flex items-center gap-3 group">
-          <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
-            KB
-          </div>
+          <img src="/favicon.svg" alt="KidaBoard" class="w-10 h-10 rounded-xl shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300 object-cover">
           <div>
             <div class="flex items-center gap-2">
               <span class="text-xl font-extrabold tracking-tight text-slate-900">Kida<span class="text-indigo-600">Board</span></span>

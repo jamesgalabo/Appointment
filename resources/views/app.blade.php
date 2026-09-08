@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
     <title inertia>{{ config('app.name', 'KidaBoard') }}</title>
-    <link rel="icon" href="{{ asset('NVC.jpg') }}" type="image/jpeg">
+    <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="alternate icon" href="{{ asset('kidaboard_logo.jpg') }}" type="image/jpeg">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
