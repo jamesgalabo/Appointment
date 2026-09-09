@@ -1,8 +1,11 @@
 <template>
   <AppLayout page-title="Messages & Communication">
     <div class="h-[calc(100vh-10rem)] min-h-[500px] bg-white rounded-3xl border border-slate-200/80 shadow-xs flex overflow-hidden">
-      <!-- Left: Conversations List (1/3 width on desktop) -->
-      <div class="w-full md:w-80 lg:w-96 border-r border-slate-200/80 flex flex-col shrink-0 bg-slate-50/50">
+      <!-- Left: Conversations List (1/3 width on desktop, full-width on mobile when no conv selected) -->
+      <div
+        class="border-r border-slate-200/80 flex flex-col shrink-0 bg-slate-50/50 transition-all duration-200"
+        :class="activeConversation ? 'hidden md:flex md:w-80 lg:w-96' : 'w-full md:w-80 lg:w-96'"
+      >
         <!-- Header -->
         <div class="p-4 bg-white border-b border-slate-100 flex items-center justify-between">
           <div>
@@ -104,13 +107,27 @@
         </div>
       </div>
 
-      <!-- Right: Active Chat Area (2/3 width) -->
-      <div class="hidden md:flex flex-1 flex-col min-w-0 bg-slate-50">
+      <!-- Right: Active Chat Area (full-screen on mobile when conv is selected, 2/3 on desktop) -->
+      <div
+        class="flex-1 flex-col min-w-0 bg-slate-50"
+        :class="activeConversation ? 'flex' : 'hidden md:flex'"
+      >
         <!-- Selected conversation thread -->
         <template v-if="activeConversation">
-          <!-- Top bar -->
-          <div class="px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between shrink-0 shadow-2xs">
-            <div class="flex items-center gap-3 min-w-0">
+          <!-- Top bar (with mobile back button) -->
+          <div class="px-4 md:px-6 py-4 bg-white border-b border-slate-100 flex items-center justify-between shrink-0 shadow-2xs">
+            <div class="flex items-center gap-2 md:gap-3 min-w-0">
+              <!-- Mobile back arrow -->
+              <button
+                type="button"
+                @click="leaveConversation"
+                class="md:hidden p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition shrink-0"
+                title="Back to conversations"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
               <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">
                 {{ activeConversation.other_user?.name?.charAt(0).toUpperCase() || '?' }}
               </div>
@@ -307,8 +324,9 @@ async function fetchConversations() {
     conversations.value = res.data.conversations || [];
     totalUnread.value = res.data.total_unread || 0;
 
-    // Auto-select first conversation if none selected
-    if (!selectedConvId.value && conversations.value.length > 0) {
+    // Auto-select first conversation on desktop only (not mobile, where we show the list first)
+    const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 768;
+    if (!selectedConvId.value && conversations.value.length > 0 && isDesktop) {
       selectConversation(conversations.value[0].id);
     }
   } catch (e) {
@@ -341,6 +359,13 @@ async function selectConversation(conversationId) {
   } finally {
     loadingMessages.value = false;
   }
+}
+
+function leaveConversation() {
+  activeConversation.value = null;
+  selectedConvId.value = null;
+  messages.value = [];
+  isOtherUserTyping.value = false;
 }
 
 async function sendMessage() {

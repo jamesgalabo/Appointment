@@ -109,7 +109,8 @@
     <!-- ======================================================== -->
     <!-- Floating Chat Trigger Button (Bottom Right)              -->
     <!-- ======================================================== -->
-    <div class="fixed bottom-6 right-6 z-40">
+    <!-- Hide the button when drawer is open on mobile (it would overlap the input bar) -->
+    <div class="fixed bottom-6 right-6 z-40" :class="isOpen ? 'hidden sm:block' : ''">
       <button
         type="button"
         @click="toggleDrawer"
@@ -155,7 +156,7 @@
     >
       <div
         v-if="isOpen"
-        class="fixed bottom-0 right-0 sm:bottom-20 sm:right-6 z-40 w-full sm:w-[420px] h-[85vh] sm:h-[620px] max-h-[90vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200/80 flex flex-col overflow-hidden text-slate-800"
+        class="fixed bottom-0 right-0 sm:bottom-20 sm:right-6 z-50 w-full sm:w-[420px] h-[85vh] sm:h-[620px] max-h-[90vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200/80 flex flex-col overflow-hidden text-slate-800"
       >
         <!-- Header -->
         <div class="px-4 py-3.5 bg-gradient-to-r from-indigo-600 via-indigo-700 to-violet-700 text-white flex items-center justify-between shrink-0 shadow-sm">
