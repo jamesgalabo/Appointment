@@ -68,12 +68,24 @@
                 </span>
               </td>
               <td class="px-5 py-3.5 text-right">
-                <button
-                  @click="confirmRemoveTenant(tenant)"
-                  class="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition cursor-pointer"
-                >
-                  End Tenancy
-                </button>
+                <div class="flex items-center justify-end gap-1.5">
+                  <button
+                    v-if="tenant.student_id"
+                    type="button"
+                    @click="messageTenant(tenant)"
+                    class="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200 transition cursor-pointer flex items-center gap-1"
+                    title="Chat with Tenant"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                    Chat
+                  </button>
+                  <button
+                    @click="confirmRemoveTenant(tenant)"
+                    class="px-3 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold border border-rose-200 transition cursor-pointer"
+                  >
+                    End Tenancy
+                  </button>
+                </div>
               </td>
             </tr>
             <tr v-if="!tenantList.length">
@@ -213,6 +225,18 @@ const tenantList = computed(() => props.tenants?.data ?? props.tenants ?? []);
 const showAddModal = ref(false);
 const showRemoveModal = ref(false);
 const tenantToRemove = ref(null);
+
+function messageTenant(tenant) {
+  if (tenant.student_id && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('open-chat', {
+      detail: {
+        recipientId: tenant.student_id,
+        houseId: tenant.room?.boarding_house_id || props.house?.id,
+        initialMessage: `Hi ${tenant.tenant_name || tenant.student?.name || 'tenant'}, regarding your room tenancy (Room ${tenant.room?.room_number || ''}):`,
+      },
+    }));
+  }
+}
 
 const addForm = reactive({
   room_id: '',

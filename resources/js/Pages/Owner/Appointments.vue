@@ -69,6 +69,16 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-2 self-end md:self-center shrink-0">
+          <button
+            type="button"
+            @click="messageStudent(apt)"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs transition cursor-pointer"
+            title="Chat with Student"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            Chat
+          </button>
+
           <template v-if="apt.status === 'pending' || apt.status === 'rescheduled'">
             <button
               @click="askAppointmentAction(apt, 'approved')"
@@ -114,19 +124,55 @@
       </p>
     </div>
 
-    <!-- Confirm Action Modal (Yes / Cancel) -->
-    <ConfirmModal
-      :show="showConfirmModal"
-      :title="modalTitle"
-      :message="modalMessage"
-      :confirm-text="modalConfirmText"
-      cancel-text="Cancel"
-      :variant="modalVariant"
-      :icon-type="modalIconType"
-      @confirm="executeAppointmentAction"
-      @cancel="showConfirmModal = false"
-      @update:show="showConfirmModal = $event"
-    />
+    <!-- Confirm Action / Rejection Modal -->
+    <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+      <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100">
+        <h3 class="text-base font-extrabold text-slate-900 mb-1">{{ modalTitle }}</h3>
+        <p class="text-xs text-slate-500 mb-4">{{ modalMessage }}</p>
+
+        <!-- Rejection Reason selection when declining -->
+        <div v-if="pendingStatus === 'rejected'" class="space-y-3 mb-5">
+          <label class="block text-xs font-bold text-slate-700">Reason for declining (sent to student):</label>
+          <div class="space-y-1.5">
+            <button
+              v-for="preset in ['Time slot unavailable - reserved by another student', 'Property undergoing maintenance', 'Landlord unavailable on selected date']"
+              :key="preset"
+              type="button"
+              @click="rejectionReason = preset"
+              class="w-full text-left px-3 py-2 rounded-xl text-xs border transition cursor-pointer"
+              :class="rejectionReason === preset ? 'bg-indigo-50 border-indigo-300 text-indigo-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'"
+            >
+              • {{ preset }}
+            </button>
+          </div>
+
+          <textarea
+            v-model="rejectionReason"
+            rows="2"
+            placeholder="Or type a custom reason..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            @click="showConfirmModal = false"
+            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            @click="executeAppointmentAction"
+            :class="pendingStatus === 'rejected' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-indigo-600 hover:bg-indigo-700'"
+            class="px-5 py-2 rounded-xl text-white text-xs font-bold shadow-xs transition cursor-pointer"
+          >
+            {{ modalConfirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
   </AppLayout>
 </template>
 
@@ -134,7 +180,6 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import ConfirmModal from '@/Components/ConfirmModal.vue';
 
 const props = defineProps({ house: Object, appointments: Object });
 const appointmentList = computed(() => props.appointments?.data ?? props.appointments ?? []);
@@ -143,6 +188,18 @@ const statusFilter = ref('all');
 const showConfirmModal = ref(false);
 const activeApt = ref(null);
 const pendingStatus = ref('');
+
+function messageStudent(apt) {
+  if (apt.student_id && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('open-chat', {
+      detail: {
+        recipientId: apt.student_id,
+        houseId: apt.boarding_house_id,
+        initialMessage: `Hello ${apt.student?.name || 'student'}, regarding your viewing appointment on ${apt.scheduled_date} (${apt.time_slot}):`,
+      },
+    }));
+  }
+}
 
 const filteredAppointments = computed(() => {
   if (statusFilter.value === 'all') return appointmentList.value;
@@ -193,18 +250,35 @@ const statusColors = {
   completed: 'bg-slate-100 text-slate-700 border-slate-200',
 };
 
+const rejectionReason = ref('');
+
 function askAppointmentAction(apt, status) {
   activeApt.value = apt;
   pendingStatus.value = status;
+  if (status === 'rejected') {
+    rejectionReason.value = 'Time slot unavailable - reserved by another student';
+  } else {
+    rejectionReason.value = '';
+  }
   showConfirmModal.value = true;
 }
 
 function executeAppointmentAction() {
   if (!activeApt.value || !pendingStatus.value) return;
-  router.patch(`/owner/appointments/${activeApt.value.id}`, { status: pendingStatus.value }, {
+  
+  const payload = {
+    status: pendingStatus.value,
+  };
+
+  if (pendingStatus.value === 'rejected' && rejectionReason.value) {
+    payload.cancellation_reason = rejectionReason.value;
+  }
+
+  router.patch(`/owner/appointments/${activeApt.value.id}`, payload, {
     onSuccess: () => {
       showConfirmModal.value = false;
       activeApt.value = null;
+      rejectionReason.value = '';
     },
   });
 }

@@ -4,15 +4,10 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Appointment extends Model
+class Review extends Model
 {
     protected $fillable = [
-        'student_id', 'boarding_house_id', 'scheduled_date',
-        'time_slot', 'status', 'notes', 'cancellation_reason',
-    ];
-
-    protected $casts = [
-        'scheduled_date' => 'date',
+        'boarding_house_id', 'student_id', 'rating', 'comment',
     ];
 
     public function student()

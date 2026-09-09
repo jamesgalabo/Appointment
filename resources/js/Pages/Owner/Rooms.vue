@@ -58,7 +58,7 @@
               :class="room.availability_status === 'available' ? 'bg-emerald-500 text-white' : room.availability_status === 'occupied' ? 'bg-rose-500 text-white' : 'bg-amber-500 text-white'"
               class="px-2.5 py-1 rounded-full text-[10px] font-bold shadow-xs capitalize"
             >
-              ● {{ room.availability_status?.replace('_', ' ') }}
+              ● {{ room.availability_status === 'available' && room.capacity > 1 && room.remaining_slots !== undefined ? `Available (${room.remaining_slots}/${room.capacity} slots)` : room.availability_status?.replace('_', ' ') }}
             </span>
           </div>
 
@@ -77,6 +77,7 @@
               <span class="text-xs font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1">
                 <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 {{ room.capacity }} pax
+                <span v-if="room.capacity > 1 && room.remaining_slots !== undefined" class="text-indigo-600 font-extrabold ml-1">({{ room.remaining_slots }} free)</span>
               </span>
             </div>
             <p class="text-xs font-semibold text-indigo-600 mb-2">{{ room.room_type }}</p>
@@ -144,14 +145,19 @@
                 </div>
               </td>
               <td class="px-5 py-3 text-slate-700 font-semibold">{{ room.room_type }}</td>
-              <td class="px-5 py-3 text-center text-slate-600 font-semibold">{{ room.capacity }} pax</td>
+              <td class="px-5 py-3 text-center text-slate-600 font-semibold">
+                {{ room.capacity }} pax
+                <div v-if="room.capacity > 1 && room.remaining_slots !== undefined" class="text-[10px] text-indigo-600 font-bold">
+                  {{ room.remaining_slots }} slot(s) free
+                </div>
+              </td>
               <td class="px-5 py-3 font-bold text-indigo-700">₱{{ formatNumber(room.monthly_rent) }}<span class="text-slate-400 font-normal">/mo</span></td>
               <td class="px-5 py-3">
                 <span
                   :class="room.availability_status === 'available' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : room.availability_status === 'occupied' ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-amber-50 text-amber-700 border-amber-200'"
                   class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize"
                 >
-                  ● {{ room.availability_status?.replace('_', ' ') }}
+                  ● {{ room.availability_status === 'available' && room.capacity > 1 && room.remaining_slots !== undefined ? `Available (${room.remaining_slots}/${room.capacity})` : room.availability_status?.replace('_', ' ') }}
                 </span>
               </td>
               <td class="px-5 py-3 text-right">
@@ -174,6 +180,12 @@
             <h3 class="text-lg font-black text-slate-900">{{ editingRoom ? 'Edit Room ' + editingRoom.room_number : 'Add New Room' }}</h3>
             <p class="text-xs text-slate-500">Provide room photo from your device, capacity, and pricing</p>
           </div>
+        </div>
+
+        <!-- Inline Error Banner -->
+        <div v-if="formErrors.room_number || formErrors.error" class="mb-4 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-start gap-2">
+          <svg class="w-4 h-4 text-rose-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <div>{{ formErrors.room_number || formErrors.error }}</div>
         </div>
 
         <form @submit.prevent="saveRoom" class="space-y-4">
@@ -211,10 +223,14 @@
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Room Type *</label>
-              <select v-model="form.room_type" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                <option value="Single Room">Single Room</option>
-                <option value="Duo Room">Duo Room</option>
-                <option value="Bedspace">Bedspace</option>
+              <select
+                v-model="form.room_type"
+                @change="handleRoomTypeChange"
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+              >
+                <option value="Solo Room">Solo Room (1 Pax)</option>
+                <option value="Duo Room">Duo Room (2 Pax)</option>
+                <option value="Bedspace">Bedspace (Shared)</option>
                 <option value="Studio Suite">Studio Suite</option>
               </select>
             </div>
@@ -222,8 +238,21 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-bold text-slate-700 mb-1">Capacity (Pax) *</label>
-              <input v-model="form.capacity" type="number" min="1" required class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" />
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-xs font-bold text-slate-700">Capacity (Pax) *</label>
+                <span v-if="isSoloRoom(form.room_type)" class="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">Fixed 1 Pax</span>
+                <span v-else-if="isDuoRoom(form.room_type)" class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">Fixed 2 Pax</span>
+              </div>
+              <input
+                v-model="form.capacity"
+                type="number"
+                min="1"
+                :disabled="isSoloRoom(form.room_type) || isDuoRoom(form.room_type)"
+                required
+                class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-xs focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none disabled:opacity-75 disabled:bg-slate-100 disabled:cursor-not-allowed"
+              />
+              <p v-if="isSoloRoom(form.room_type)" class="text-[10px] text-slate-400 mt-1">Solo room automatically fixed at 1 pax.</p>
+              <p v-else-if="isDuoRoom(form.room_type)" class="text-[10px] text-slate-400 mt-1">Duo room automatically fixed at 2 pax.</p>
             </div>
             <div>
               <label class="block text-xs font-bold text-slate-700 mb-1">Monthly Rent (₱) *</label>
@@ -247,7 +276,18 @@
 
           <div class="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
             <button type="button" @click="showModal = false" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer">Cancel</button>
-            <button type="submit" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-md shadow-indigo-600/20 cursor-pointer">Save Room</button>
+            <button
+              type="submit"
+              :disabled="isSubmitting"
+              :class="isSubmitting ? 'opacity-60 cursor-not-allowed bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700 cursor-pointer shadow-md shadow-indigo-600/20'"
+              class="px-5 py-2 rounded-xl text-white text-xs font-bold transition flex items-center gap-1.5"
+            >
+              <svg v-if="isSubmitting" class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+              </svg>
+              <span>{{ isSubmitting ? 'Saving Room...' : 'Save Room' }}</span>
+            </button>
           </div>
         </form>
       </div>
@@ -270,7 +310,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, watch } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import ConfirmModal from '@/Components/ConfirmModal.vue';
@@ -280,6 +320,8 @@ const roomsList = computed(() => props.rooms?.data ?? props.rooms ?? []);
 
 const viewMode = ref('grid');
 const showModal = ref(false);
+const isSubmitting = ref(false);
+const formErrors = ref({});
 const showDeleteModal = ref(false);
 const editingRoom = ref(null);
 const roomToDelete = ref(null);
@@ -287,13 +329,39 @@ const previewUrl = ref(null);
 
 const form = reactive({
   room_number: '',
-  room_type: 'Single Room',
+  room_type: 'Solo Room',
   capacity: 1,
   monthly_rent: 2500,
   description: '',
   photo_url: '',
   photo_file: null,
   availability_status: 'available',
+});
+
+function isSoloRoom(type) {
+  return type === 'Solo Room' || type === 'Single Room';
+}
+
+function isDuoRoom(type) {
+  return type === 'Duo Room';
+}
+
+function handleRoomTypeChange() {
+  if (isSoloRoom(form.room_type)) {
+    form.capacity = 1;
+  } else if (isDuoRoom(form.room_type)) {
+    form.capacity = 2;
+  } else if (form.room_type === 'Bedspace' && form.capacity < 2) {
+    form.capacity = 4;
+  }
+}
+
+watch(() => form.room_type, (newType) => {
+  if (isSoloRoom(newType)) {
+    form.capacity = 1;
+  } else if (isDuoRoom(newType)) {
+    form.capacity = 2;
+  }
 });
 
 function defaultRoomImage(type) {
@@ -323,10 +391,12 @@ function clearImage() {
 function openModal(room = null) {
   editingRoom.value = room;
   previewUrl.value = null;
+  formErrors.value = {};
+  isSubmitting.value = false;
   if (room) {
     form.room_number = room.room_number;
     form.room_type = room.room_type;
-    form.capacity = room.capacity;
+    form.capacity = isSoloRoom(room.room_type) ? 1 : room.capacity;
     form.monthly_rent = room.monthly_rent;
     form.description = room.description ?? '';
     form.photo_url = room.photo_url ?? '';
@@ -334,7 +404,7 @@ function openModal(room = null) {
     form.availability_status = room.availability_status;
   } else {
     form.room_number = '';
-    form.room_type = 'Single Room';
+    form.room_type = 'Solo Room';
     form.capacity = 1;
     form.monthly_rent = 2500;
     form.description = '';
@@ -346,6 +416,10 @@ function openModal(room = null) {
 }
 
 function saveRoom() {
+  if (isSubmitting.value) return;
+  isSubmitting.value = true;
+  formErrors.value = {};
+
   const formData = new FormData();
   formData.append('room_number', form.room_number);
   formData.append('room_type', form.room_type);
@@ -363,11 +437,31 @@ function saveRoom() {
   if (editingRoom.value) {
     formData.append('_method', 'PATCH');
     router.post(`/owner/rooms/${editingRoom.value.id}`, formData, {
-      onSuccess: () => (showModal.value = false),
+      onSuccess: () => {
+        showModal.value = false;
+        isSubmitting.value = false;
+      },
+      onError: (errs) => {
+        formErrors.value = errs;
+        isSubmitting.value = false;
+      },
+      onFinish: () => {
+        isSubmitting.value = false;
+      },
     });
   } else {
     router.post('/owner/rooms', formData, {
-      onSuccess: () => (showModal.value = false),
+      onSuccess: () => {
+        showModal.value = false;
+        isSubmitting.value = false;
+      },
+      onError: (errs) => {
+        formErrors.value = errs;
+        isSubmitting.value = false;
+      },
+      onFinish: () => {
+        isSubmitting.value = false;
+      },
     });
   }
 }

@@ -3,6 +3,7 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
@@ -17,14 +18,15 @@ class BookingStatusUpdated implements ShouldBroadcastNow
         public int $id,
         public string $status,
         public ?int $studentId = null,
-        public ?int $houseId = null
+        public ?int $houseId = null,
+        public ?string $reason = null
     ) {}
 
     public function broadcastOn(): array
     {
         return [
             new Channel('kidaboard-public'),
-            new Channel('kidaboard-user.' . ($this->studentId ?? 0)),
+            new PrivateChannel('kidaboard-user.' . ($this->studentId ?? 0)),
         ];
     }
 

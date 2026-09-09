@@ -10,11 +10,21 @@ export default defineConfig({
         hmr: {
             host: 'localhost',
         },
+        watch: {
+            ignored: [
+                '**/storage/**',
+                '**/vendor/**',
+                '**/.git/**',
+            ],
+        },
     },
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.js'],
-            refresh: true,
+            refresh: [
+                'resources/views/**',
+                'routes/**',
+            ],
         }),
         vue({
             template: {

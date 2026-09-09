@@ -37,6 +37,26 @@
                 ></textarea>
               </div>
 
+              <!-- Property Amenities & Security Checklist -->
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2">Amenities & Security Features (Check all that apply)</label>
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-slate-50 p-4 rounded-2xl border border-slate-200/80">
+                  <label
+                    v-for="amenity in availableAmenities"
+                    :key="amenity.name"
+                    class="flex items-center gap-2 p-2 rounded-xl bg-white border border-slate-200/80 hover:border-indigo-300 cursor-pointer transition text-xs font-medium text-slate-800"
+                  >
+                    <input
+                      type="checkbox"
+                      :value="amenity.name"
+                      v-model="form.amenities"
+                      class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4 cursor-pointer"
+                    />
+                    <span class="truncate">{{ amenity.icon }} {{ amenity.name }}</span>
+                  </label>
+                </div>
+              </div>
+
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="block text-xs font-bold text-slate-700 mb-1">Barangay (Kidapawan City) *</label>
@@ -233,11 +253,26 @@ const props = defineProps({ user: Object, house: Object });
 const loading = ref(false);
 const previewThumbnail = ref(null);
 
+const availableAmenities = [
+  { name: '24/7 Security & CCTV', icon: '🛡️' },
+  { name: 'Vendo Wi-Fi', icon: '📶' },
+  { name: 'Air Conditioning', icon: '❄️' },
+  { name: 'Water Refill Station', icon: '🚰' },
+  { name: 'Shared Kitchen / Cooking Allowed', icon: '🍳' },
+  { name: 'Gated Entrance & Curfew', icon: '🚪' },
+  { name: 'Laundry & Drying Area', icon: '🧺' },
+  { name: 'Backup Generator', icon: '⚡' },
+  { name: 'Parking Space', icon: '🚗' },
+  { name: 'Private Bathroom / En-Suite', icon: '🛁' },
+  { name: 'No Curfew', icon: '⏰' },
+];
+
 const form = reactive({
   name: props.user?.name ?? '',
   phone: props.user?.phone ?? '',
   house_name: props.house?.name ?? '',
   house_description: props.house?.description ?? '',
+  amenities: Array.isArray(props.house?.amenities) ? [...props.house.amenities] : [],
   house_address: props.house?.address ?? '',
   house_contact: props.house?.contact_number ?? '',
   barangay: props.house?.barangay ?? 'Poblacion',
@@ -271,6 +306,10 @@ function submit() {
   formData.append('house_contact', form.house_contact || '');
   formData.append('barangay', form.barangay);
   formData.append('map_url', form.map_url || '');
+
+  (form.amenities || []).forEach(item => {
+    formData.append('amenities[]', item);
+  });
 
   if (form.thumbnail_file) {
     formData.append('thumbnail_file', form.thumbnail_file);

@@ -55,7 +55,9 @@
             <span class="truncate text-xs">{{ item.label }}</span>
             <span
               v-if="item.badge"
-              :class="isActive(item.href) ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800 border border-amber-200'"
+              :class="item.isDangerBadge
+                ? 'bg-rose-500 text-white font-bold shadow-xs animate-pulse'
+                : (isActive(item.href) ? 'bg-white/20 text-white' : 'bg-amber-100 text-amber-800 border border-amber-200')"
               class="ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold"
             >
               {{ item.badge }}
@@ -113,9 +115,13 @@
 
         <!-- Flash alert -->
         <transition name="fade">
-          <div v-if="flash.success" class="hidden md:flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-            {{ flash.success }}
+          <div v-if="flash.success" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0"></span>
+            <span class="truncate max-w-[220px] sm:max-w-md">{{ flash.success }}</span>
+          </div>
+          <div v-else-if="flash.error" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0"></span>
+            <span class="truncate max-w-[220px] sm:max-w-md">{{ flash.error }}</span>
           </div>
         </transition>
 
@@ -190,12 +196,16 @@
 
     <!-- Cookie Consent Banner -->
     <CookieConsent />
+
+    <!-- Live Real-Time Chat Drawer & Auto-Pop WebSockets Notification -->
+    <ChatDrawer v-if="user?.id" />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed } from 'vue';
 import CookieConsent from '@/Components/CookieConsent.vue';
+import ChatDrawer from '@/Components/ChatDrawer.vue';
 import { usePage, router, Link } from '@inertiajs/vue3';
 import { getNavigationForRole, NAV_ICONS } from '@/Config/navigation.js';
 import ConfirmModal from '@/Components/ConfirmModal.vue';
@@ -215,9 +225,29 @@ const initials = computed(() => {
   return user.value.name.split(' ').slice(0, 2).map(n => n[0]).join('').toUpperCase();
 });
 
-// Single Source of Truth: Navigation hierarchy never changes across pages
+const pendingCounts = computed(() => page.props.pending_counts ?? { appointments: 0, reservations: 0 });
+
+// Single Source of Truth: Navigation hierarchy with dynamic danger badge counters for owner
 const effectiveNavGroups = computed(() => {
-  return getNavigationForRole(role.value);
+  const groups = getNavigationForRole(role.value);
+  if (role.value === 'owner') {
+    return groups.map(g => ({
+      ...g,
+      items: g.items.map(item => {
+        let badge = item.badge;
+        let isDangerBadge = false;
+        if (item.href === '/owner/appointments' && pendingCounts.value.appointments > 0) {
+          badge = pendingCounts.value.appointments;
+          isDangerBadge = true;
+        } else if (item.href === '/owner/reservations' && pendingCounts.value.reservations > 0) {
+          badge = pendingCounts.value.reservations;
+          isDangerBadge = true;
+        }
+        return { ...item, badge, isDangerBadge };
+      }),
+    }));
+  }
+  return groups;
 });
 
 function isActive(href) {
@@ -230,21 +260,6 @@ function isActive(href) {
 function performLogout() {
   router.post('/logout');
 }
-
-onMounted(() => {
-  if (typeof window !== 'undefined' && window.Echo) {
-    window.Echo.channel('kidaboard-public')
-      .listen('.booking.updated', () => {
-        router.reload({ preserveScroll: true, preserveState: true });
-      });
-  }
-});
-
-onUnmounted(() => {
-  if (typeof window !== 'undefined' && window.Echo) {
-    window.Echo.leaveChannel('kidaboard-public');
-  }
-});
 </script>
 
 <style scoped>

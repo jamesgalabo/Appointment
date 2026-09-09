@@ -27,6 +27,7 @@ export const OWNER_NAVIGATION = [
     label: 'Overview',
     items: [
       { label: 'Dashboard', href: '/owner/dashboard', icon: 'grid' },
+      { label: 'Live Messages', href: '/messages', icon: 'chat' },
       { label: 'Rooms & Units', href: '/owner/rooms', icon: 'layers' },
     ],
   },
@@ -51,6 +52,7 @@ export const STUDENT_NAVIGATION = [
     label: 'Explore',
     items: [
       { label: 'Find Boarding Houses', href: '/student/explore', icon: 'search' },
+      { label: 'Live Messages', href: '/messages', icon: 'chat' },
       { label: 'Dashboard', href: '/student/dashboard', icon: 'grid' },
     ],
   },
@@ -89,6 +91,7 @@ export function getNavigationForRole(role) {
  * SVG path data for each icon key (24x24, stroke-based, fill=none).
  */
 export const NAV_ICONS = {
+  chat:        'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z',
   grid:        'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
   'bar-chart': 'M18 20V10M12 20V4M6 20v-6',
   building:    'M3 21h18M9 8h1m-1 4h1m-1 4h1M13 8h1m-1 4h1m-1 4h1M5 21V5a2 2 0 012-2h10a2 2 0 012 2v16',

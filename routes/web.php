@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\ChatController;
 
 /*
 |--------------------------------------------------------------------------
@@ -108,4 +109,22 @@ Route::middleware(['auth', 'role:student'])->prefix('student')->name('student.')
     Route::patch('/reservations/{reservation}/cancel', [StudentController::class, 'cancelReservation'])->name('reservations.cancel');
     Route::get('/profile', [StudentController::class, 'profile'])->name('profile');
     Route::patch('/profile', [StudentController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/houses/{house}/review', [StudentController::class, 'submitReview'])->name('houses.review.submit');
+    Route::delete('/houses/{house}/review', [StudentController::class, 'deleteReview'])->name('houses.review.delete');
 });
+
+/*
+|--------------------------------------------------------------------------
+| Real-Time Chat Routes (Students & Owners)
+|--------------------------------------------------------------------------
+*/
+
+Route::middleware('auth')->group(function () {
+    Route::get('/messages', [ChatController::class, 'index'])->name('messages.index');
+    Route::get('/api/chat/conversations', [ChatController::class, 'getConversations'])->name('chat.conversations');
+    Route::post('/api/chat/start', [ChatController::class, 'startOrGetConversation'])->name('chat.start');
+    Route::get('/api/chat/conversations/{conversation}/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+    Route::post('/api/chat/conversations/{conversation}/messages', [ChatController::class, 'sendMessage'])->name('chat.send');
+    Route::post('/api/chat/conversations/{conversation}/read', [ChatController::class, 'markAsRead'])->name('chat.read');
+});
+

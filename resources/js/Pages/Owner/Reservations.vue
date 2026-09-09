@@ -69,7 +69,7 @@
               </span>
               <span class="flex items-center gap-1">
                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                Move-in: <strong class="text-slate-800">{{ res.intended_move_in_date || 'N/A' }}</strong>
+                Move-in: <strong class="text-slate-800">{{ formatDate(res.intended_move_in_date) }}</strong>
               </span>
             </div>
 
@@ -105,6 +105,16 @@
 
         <!-- Right actions: Approve / Reject with Confirm Dialog -->
         <div class="flex items-center gap-2 self-end md:self-center shrink-0">
+          <button
+            type="button"
+            @click="messageStudent(res)"
+            class="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold text-xs transition cursor-pointer"
+            title="Chat with Student"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            Chat
+          </button>
+
           <template v-if="res.status === 'pending'">
             <button
               @click="askApproval(res, 'approved')"
@@ -130,12 +140,7 @@
           </template>
 
           <template v-else>
-            <button
-              @click="askApproval(res, 'approved')"
-              class="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs transition cursor-pointer"
-            >
-              Re-approve
-            </button>
+            <span class="text-xs font-semibold text-slate-400 capitalize">{{ res.status }}</span>
           </template>
         </div>
       </div>
@@ -152,19 +157,55 @@
       </p>
     </div>
 
-    <!-- Confirm Action Modal (Yes / Cancel) -->
-    <ConfirmModal
-      :show="showConfirmModal"
-      :title="modalTitle"
-      :message="modalMessage"
-      :confirm-text="modalConfirmText"
-      cancel-text="Cancel"
-      :variant="modalVariant"
-      :icon-type="modalIconType"
-      @confirm="executeAction"
-      @cancel="showConfirmModal = false"
-      @update:show="showConfirmModal = $event"
-    />
+    <!-- Confirm Action / Rejection Modal -->
+    <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs">
+      <div class="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl border border-slate-100">
+        <h3 class="text-base font-extrabold text-slate-900 mb-1">{{ modalTitle }}</h3>
+        <p class="text-xs text-slate-500 mb-4">{{ modalMessage }}</p>
+
+        <!-- Rejection Reason selection when declining -->
+        <div v-if="pendingActionStatus === 'rejected'" class="space-y-3 mb-5">
+          <label class="block text-xs font-bold text-slate-700">Reason for declining (sent to student):</label>
+          <div class="space-y-1.5">
+            <button
+              v-for="preset in ['Room already reserved by another student', 'Payment / deposit receipt unverified', 'Target move-in date unavailable']"
+              :key="preset"
+              type="button"
+              @click="rejectionReason = preset"
+              class="w-full text-left px-3 py-2 rounded-xl text-xs border transition cursor-pointer"
+              :class="rejectionReason === preset ? 'bg-indigo-50 border-indigo-300 text-indigo-900 font-bold' : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'"
+            >
+              • {{ preset }}
+            </button>
+          </div>
+
+          <textarea
+            v-model="rejectionReason"
+            rows="2"
+            placeholder="Or type a custom reason..."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+          ></textarea>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
+          <button
+            type="button"
+            @click="showConfirmModal = false"
+            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            @click="executeAction"
+            :class="pendingActionStatus === 'rejected' ? 'bg-rose-600 hover:bg-rose-700' : 'bg-indigo-600 hover:bg-indigo-700'"
+            class="px-5 py-2 rounded-xl text-white text-xs font-bold shadow-xs transition cursor-pointer"
+          >
+            {{ modalConfirmText }}
+          </button>
+        </div>
+      </div>
+    </div>
   </AppLayout>
 </template>
 
@@ -172,7 +213,6 @@
 import { ref, computed } from 'vue';
 import { router } from '@inertiajs/vue3';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import ConfirmModal from '@/Components/ConfirmModal.vue';
 
 const props = defineProps({
   house: Object,
@@ -185,6 +225,18 @@ const statusFilter = ref('all');
 const showConfirmModal = ref(false);
 const activeRes = ref(null);
 const pendingActionStatus = ref('');
+
+function messageStudent(res) {
+  if (res.student_id && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('open-chat', {
+      detail: {
+        recipientId: res.student_id,
+        houseId: res.room?.boarding_house_id,
+        initialMessage: `Hello ${res.student?.name || 'student'}, regarding your reservation for Room ${res.room?.room_number}:`,
+      },
+    }));
+  }
+}
 
 const filteredReservations = computed(() => {
   if (statusFilter.value === 'all') return reservationsList.value;
@@ -237,18 +289,46 @@ function formatNumber(val) {
   return Number(val || 0).toLocaleString();
 }
 
+function formatDate(dateStr) {
+  if (!dateStr) return 'N/A';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  } catch (e) {
+    return dateStr;
+  }
+}
+
+const rejectionReason = ref('');
+
 function askApproval(res, status) {
   activeRes.value = res;
   pendingActionStatus.value = status;
+  if (status === 'rejected') {
+    rejectionReason.value = 'Room already reserved by another student';
+  } else {
+    rejectionReason.value = '';
+  }
   showConfirmModal.value = true;
 }
 
 function executeAction() {
   if (!activeRes.value || !pendingActionStatus.value) return;
-  router.patch(`/owner/reservations/${activeRes.value.id}`, { status: pendingActionStatus.value }, {
+
+  const payload = {
+    status: pendingActionStatus.value,
+  };
+
+  if (pendingActionStatus.value === 'rejected' && rejectionReason.value) {
+    payload.cancellation_reason = rejectionReason.value;
+  }
+
+  router.patch(`/owner/reservations/${activeRes.value.id}`, payload, {
     onSuccess: () => {
       showConfirmModal.value = false;
       activeRes.value = null;
+      rejectionReason.value = '';
     },
   });
 }

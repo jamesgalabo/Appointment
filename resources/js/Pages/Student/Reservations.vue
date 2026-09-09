@@ -54,7 +54,7 @@
               </span>
               <span class="flex items-center gap-1">
                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                Move-in: <strong class="text-slate-800">{{ res.intended_move_in_date }}</strong>
+                Move-in: <strong class="text-slate-800">{{ formatDate(res.intended_move_in_date) }}</strong>
               </span>
             </div>
 
@@ -76,6 +76,11 @@
                 View Uploaded Receipt
               </a>
             </div>
+
+            <div v-if="res.cancellation_reason" class="mt-2.5 px-3 py-2 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-800 text-xs font-medium max-w-xl">
+              <span class="font-extrabold block text-[11px] text-rose-900 uppercase tracking-wider mb-0.5">Notice / Reason:</span>
+              "{{ res.cancellation_reason }}"
+            </div>
           </div>
         </div>
 
@@ -91,6 +96,15 @@
           <div v-else class="text-xs text-slate-400 font-medium capitalize">
             Status: {{ res.status }}
           </div>
+
+          <button
+            type="button"
+            @click="messageHost(res)"
+            class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            Message Host
+          </button>
 
           <!-- Cancel Reservation Button -->
           <button
@@ -150,6 +164,29 @@ const resToCancel = ref(null);
 
 function formatNumber(val) {
   return Number(val || 0).toLocaleString();
+}
+
+function formatDate(iso) {
+  if (!iso) return 'Not set';
+  try {
+    const d = new Date(iso);
+    return isNaN(d) ? iso : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } catch {
+    return iso;
+  }
+}
+
+function messageHost(res) {
+  const ownerId = res.room?.boarding_house?.owner_id;
+  if (ownerId && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('open-chat', {
+      detail: {
+        recipientId: ownerId,
+        houseId: res.room?.boarding_house_id,
+        initialMessage: `Hi! Inquiring regarding my reservation (Ref #${res.qr_reference}) for Room ${res.room?.room_number} at ${res.room?.boarding_house?.name}.`,
+      },
+    }));
+  }
 }
 
 function askCancel(res) {

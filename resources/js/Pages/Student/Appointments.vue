@@ -56,6 +56,11 @@
             <p v-if="apt.notes" class="text-xs text-slate-500 italic mt-2 bg-slate-50 px-3 py-1 rounded-lg border border-slate-100 max-w-xl">
               "{{ apt.notes }}"
             </p>
+
+            <div v-if="apt.cancellation_reason" class="mt-2.5 px-3 py-2 rounded-xl bg-rose-50 border border-rose-200/80 text-rose-800 text-xs font-medium max-w-xl">
+              <span class="font-extrabold block text-[11px] text-rose-900 uppercase tracking-wider mb-0.5">Notice / Reason:</span>
+              "{{ apt.cancellation_reason }}"
+            </div>
           </div>
         </div>
 
@@ -71,6 +76,15 @@
           <div v-else class="text-xs text-slate-400 font-medium capitalize">
             Status: {{ apt.status }}
           </div>
+
+          <button
+            type="button"
+            @click="messageHost(apt)"
+            class="px-3.5 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+            Message Host
+          </button>
 
           <button
             v-if="apt.status === 'pending' || apt.status === 'approved'"
@@ -124,6 +138,19 @@ const appointmentList = computed(() => props.appointments?.data ?? props.appoint
 
 const showCancelModal = ref(false);
 const aptToCancel = ref(null);
+
+function messageHost(apt) {
+  const ownerId = apt.boarding_house?.owner_id;
+  if (ownerId && typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('open-chat', {
+      detail: {
+        recipientId: ownerId,
+        houseId: apt.boarding_house_id,
+        initialMessage: `Hi! Inquiring regarding my viewing visit on ${apt.scheduled_date} (${apt.time_slot}) for ${apt.boarding_house?.name}.`,
+      },
+    }));
+  }
+}
 
 function askCancelAppointment(apt) {
   aptToCancel.value = apt;

@@ -8,13 +8,15 @@ class Reservation extends Model
 {
     protected $fillable = [
         'student_id', 'room_id', 'reservation_date', 'intended_move_in_date',
+        'slots_reserved', 'companion_name',
         'deposit_amount', 'payment_method', 'payment_reference', 'payment_receipt_url',
         'status', 'qr_reference', 'remarks', 'cancellation_reason',
     ];
 
     protected $casts = [
-        'reservation_date' => 'date',
+        'reservation_date'      => 'date',
         'intended_move_in_date' => 'date',
+        'slots_reserved'        => 'integer',
     ];
 
     public function student()
