@@ -63,7 +63,7 @@ class ChatController extends Controller
                         'sender_id'      => $conversation->latestMessage->sender_id,
                         'sender_name'    => $conversation->latestMessage->sender?->name,
                         'created_at'     => $conversation->latestMessage->created_at->toIso8601String(),
-                        'formatted_time' => $conversation->latestMessage->created_at->diffForHumans(null, true, true),
+                        'formatted_time' => $conversation->latestMessage->created_at->setTimezone(config('app.timezone', 'Asia/Manila'))->format('g:i A'),
                     ] : null,
                     'unread_count'        => $unreadCount,
                     'last_message_at'     => $conversation->last_message_at?->toIso8601String(),
@@ -128,7 +128,11 @@ class ChatController extends Controller
             ]);
 
             $conversation->update(['last_message_at' => now()]);
-            event(new MessageSent($message, $recipient->id));
+            try {
+                event(new MessageSent($message, $recipient->id));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Broadcast failed for message ' . $message->id . ': ' . $e->getMessage());
+            }
         }
 
         return response()->json([
@@ -182,7 +186,7 @@ class ChatController extends Controller
                     'body'           => $message->body,
                     'is_read'        => (bool) $message->is_read,
                     'created_at'     => $message->created_at->toIso8601String(),
-                    'formatted_time' => $message->created_at->format('h:i A'),
+                    'formatted_time' => $message->created_at->setTimezone(config('app.timezone', 'Asia/Manila'))->format('g:i A'),
                 ];
             });
 
@@ -233,7 +237,11 @@ class ChatController extends Controller
             : (int) $conversation->student_id;
 
         // Broadcast immediately over Reverb WebSockets
-        event(new MessageSent($message, $recipientId));
+        try {
+            event(new MessageSent($message, $recipientId));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('Broadcast failed for message ' . $message->id . ': ' . $e->getMessage());
+        }
 
         return response()->json([
             'message' => [
@@ -245,7 +253,7 @@ class ChatController extends Controller
                 'body'           => $message->body,
                 'is_read'        => (bool) $message->is_read,
                 'created_at'     => $message->created_at->toIso8601String(),
-                'formatted_time' => $message->created_at->format('h:i A'),
+                'formatted_time' => $message->created_at->setTimezone(config('app.timezone', 'Asia/Manila'))->format('g:i A'),
             ],
         ]);
     }

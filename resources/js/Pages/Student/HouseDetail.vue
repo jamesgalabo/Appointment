@@ -470,29 +470,37 @@
           <!-- ── Bedspace / Multi-slot Selector (Only when capacity > 1) ── -->
           <div v-else>
             <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-bold text-slate-700">How many slots do you need? *</label>
+              <label for="slots-input" class="text-xs font-bold text-slate-700">How many slots do you need? *</label>
               <span class="text-[11px] text-indigo-600 font-bold">
                 {{ parseInt(selectedRoom?.remaining_slots ?? selectedRoom?.capacity ?? 1) }} of {{ parseInt(selectedRoom?.capacity) }} slot(s) available
               </span>
             </div>
-            <!-- Grid: dynamically up to remaining_slots -->  
-            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            <div class="flex items-center gap-3">
               <button
-                v-for="n in parseInt(selectedRoom?.remaining_slots ?? selectedRoom?.capacity ?? 1)"
-                :key="n"
                 type="button"
-                @click="reservationForm.slots_reserved = n; if (n === 1) reservationForm.companion_name = ''"
-                :class="reservationForm.slots_reserved === n
-                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-md shadow-indigo-600/20'
-                  : 'bg-slate-50 text-slate-700 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/40'"
-                class="py-3 rounded-xl border text-xs font-bold transition text-center cursor-pointer flex flex-col items-center gap-0.5"
-              >
-                <span class="text-base font-black">{{ n }}</span>
-                <span class="text-[10px] font-semibold opacity-80">{{ n === 1 ? 'person' : 'people' }}</span>
-              </button>
+                @click="reservationForm.slots_reserved = Math.max(1, reservationForm.slots_reserved - 1); if (reservationForm.slots_reserved === 1) reservationForm.companion_name = ''"
+                class="w-10 h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-lg flex items-center justify-center transition cursor-pointer shrink-0"
+                :disabled="reservationForm.slots_reserved <= 1"
+              >−</button>
+              <input
+                id="slots-input"
+                type="number"
+                v-model.number="reservationForm.slots_reserved"
+                :min="1"
+                :max="parseInt(selectedRoom?.remaining_slots ?? selectedRoom?.capacity ?? 1)"
+                @change="reservationForm.slots_reserved = Math.min(Math.max(1, reservationForm.slots_reserved), parseInt(selectedRoom?.remaining_slots ?? selectedRoom?.capacity ?? 1)); if (reservationForm.slots_reserved === 1) reservationForm.companion_name = ''"
+                class="flex-1 text-center px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-black focus:bg-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                placeholder="e.g. 2"
+              />
+              <button
+                type="button"
+                @click="reservationForm.slots_reserved = Math.min(parseInt(selectedRoom?.remaining_slots ?? selectedRoom?.capacity ?? 1), reservationForm.slots_reserved + 1)"
+                class="w-10 h-10 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-lg flex items-center justify-center transition cursor-pointer shrink-0"
+                :disabled="reservationForm.slots_reserved >= parseInt(selectedRoom?.remaining_slots ?? selectedRoom?.capacity ?? 1)"
+              >+</button>
             </div>
             <div class="mt-2 px-3 py-2 rounded-xl text-[11px] font-semibold"
-              :class="reservationForm.slots_reserved === (selectedRoom?.remaining_slots ?? selectedRoom?.capacity)
+              :class="reservationForm.slots_reserved === parseInt(selectedRoom?.remaining_slots ?? selectedRoom?.capacity)
                 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                 : 'bg-indigo-50 text-indigo-700 border border-indigo-100'"
             >

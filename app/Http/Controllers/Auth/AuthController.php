@@ -94,8 +94,12 @@ class AuthController extends Controller
             'updated_at'  => now(),
         ]);
 
-        // Send OTP email
-        Mail::to($data['email'])->send(new VerificationOtpMail($otp, $data['name']));
+        // Send OTP email (safely handle network/SMTP timeouts)
+        try {
+            Mail::to($data['email'])->send(new VerificationOtpMail($otp, $data['name']));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Registration OTP Email failed for {$data['email']}: {$e->getMessage()} | OTP is: {$otp}");
+        }
 
         return Inertia::render('Auth/VerifyOtp', [
             'email' => $data['email'],
@@ -182,7 +186,11 @@ class AuthController extends Controller
                 'updated_at' => now(),
             ]);
 
-        Mail::to($request->email)->send(new VerificationOtpMail($otp, $payload['name']));
+        try {
+            Mail::to($request->email)->send(new VerificationOtpMail($otp, $payload['name']));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error("Resend OTP Email failed for {$request->email}: {$e->getMessage()} | OTP is: {$otp}");
+        }
 
         return back()->with('resent', true);
     }
