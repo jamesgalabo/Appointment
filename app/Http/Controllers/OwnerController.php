@@ -278,37 +278,6 @@ class OwnerController extends Controller
     public function tenants()
     {
         $house = $this->house();
-        if ($house) {
-            $approvedReservations = Reservation::with(['student', 'room'])
-                ->whereHas('room', fn($q) => $q->where('boarding_house_id', $house->id))
-                ->whereIn('status', ['approved', 'reserved'])
-                ->get();
-            foreach ($approvedReservations as $res) {
-                // Check if tenancy was already ended for this student and room
-                $hasEnded = Tenant::where('student_id', $res->student_id)
-                    ->where('room_id', $res->room_id)
-                    ->where('status', 'ended')
-                    ->exists();
-
-                if (! $hasEnded) {
-                    Tenant::firstOrCreate(
-                        [
-                            'student_id' => $res->student_id,
-                            'room_id'    => $res->room_id,
-                        ],
-                        [
-                            'tenant_name'  => $res->student?->name ?? 'Student',
-                            'tenant_phone' => $res->student?->phone,
-                            'tenant_email' => $res->student?->email,
-                            'start_date'   => $res->intended_move_in_date ?? now()->toDateString(),
-                            'monthly_rate' => $res->room?->monthly_rent ?? 0,
-                            'status'       => 'active',
-                        ]
-                    );
-                }
-            }
-        }
-
         $rooms = $house ? $house->rooms()->get() : collect();
         $tenants = $house
             ? Tenant::with(['student:id,name,email,phone', 'room:id,room_number,room_type,monthly_rent'])
