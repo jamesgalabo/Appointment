@@ -2,7 +2,7 @@
   <AppLayout page-title="Boarding Houses">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
       <div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Boarding Houses Directory</h1>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Boarding Houses Directory</h1>
         <p class="text-xs text-slate-500 font-medium mt-0.5">Manage partner boarding properties, review new registrations, and inspect rooms</p>
       </div>
 
@@ -13,8 +13,67 @@
       </div>
     </div>
 
-    <!-- Houses Table Card -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+    <!-- Mobile Card View -->
+    <div class="sm:hidden space-y-3 mb-6">
+      <div
+        v-for="house in housesList"
+        :key="house.id"
+        class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-3"
+      >
+        <div class="flex items-start gap-3">
+          <img
+            :src="house.thumbnail_url ?? 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&q=80&w=200'"
+            class="w-12 h-12 rounded-xl object-cover bg-slate-100 border border-slate-200/60 shrink-0"
+          />
+          <div class="flex-1 min-w-0">
+            <h3 class="font-bold text-slate-900 text-sm truncate">{{ house.name }}</h3>
+            <p class="text-xs text-slate-500 truncate">{{ house.address }}</p>
+            <p class="text-[11px] text-slate-400 font-medium mt-0.5">📍 {{ house.barangay }}, {{ house.city ?? 'Kidapawan' }}</p>
+          </div>
+          <span
+            :class="house.status === 'approved' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : house.status === 'pending' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-rose-50 text-rose-700 border-rose-200'"
+            class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize shrink-0"
+          >
+            {{ house.status }}
+          </span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-slate-100 text-xs">
+          <div>
+            <span class="text-[10px] text-slate-400 font-bold uppercase block">Owner</span>
+            <span class="font-semibold text-slate-800 truncate block">{{ house.owner?.name ?? '—' }}</span>
+            <span class="text-[11px] text-slate-400 truncate block">{{ house.contact_number || 'No contact' }}</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[10px] text-slate-400 font-bold uppercase block">Rooms / Rating</span>
+            <span class="font-bold text-slate-800 block">{{ house.rooms_count }} units</span>
+            <span class="text-amber-600 font-bold text-[11px] block">⭐ {{ house.rating }}</span>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-slate-100 flex items-center justify-end gap-2" v-if="house.status === 'pending'">
+          <button
+            @click="askHouseApproval(house, 'approved')"
+            class="flex-1 sm:flex-initial py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-bold text-xs transition cursor-pointer text-center"
+          >
+            ✓ Approve
+          </button>
+          <button
+            @click="askHouseApproval(house, 'rejected')"
+            class="flex-1 sm:flex-initial py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-bold text-xs transition cursor-pointer text-center"
+          >
+            ✕ Reject
+          </button>
+        </div>
+      </div>
+
+      <div v-if="housesList.length === 0" class="text-center py-8 bg-white rounded-2xl border border-slate-200/80 text-xs text-slate-500">
+        No boarding houses found.
+      </div>
+    </div>
+
+    <!-- Desktop Houses Table Card -->
+    <div class="hidden sm:block bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
           <thead>

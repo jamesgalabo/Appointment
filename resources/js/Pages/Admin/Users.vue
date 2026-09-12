@@ -1,26 +1,50 @@
 <template>
   <AppLayout page-title="Platform Users">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col gap-3 mb-6">
       <div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Platform Users</h1>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Platform Users</h1>
         <p class="text-xs text-slate-500 font-medium mt-0.5">Manage registered students, property owners, and administrators</p>
       </div>
 
-      <div class="flex items-center gap-1.5 p-1 bg-white border border-slate-200/80 rounded-xl shadow-2xs">
+      <!-- Role filter -->
+      <div class="flex items-center gap-1 p-1 bg-white border border-slate-200/80 rounded-xl shadow-2xs w-full sm:w-auto overflow-x-auto">
         <button
           v-for="r in ['all', 'student', 'owner', 'admin']"
           :key="r"
           @click="filterRole = r"
           :class="filterRole === r ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'"
-          class="px-3 py-1.5 rounded-lg text-xs capitalize transition"
+          class="px-3 py-1.5 rounded-lg text-xs capitalize transition shrink-0"
         >
           {{ r }}
         </button>
       </div>
     </div>
 
-    <!-- Users Table Card -->
-    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+    <!-- Mobile: card list -->
+    <div class="sm:hidden space-y-3">
+      <div v-for="user in filteredUsers" :key="user.id" class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-sm font-bold shrink-0 shadow-xs">
+            {{ user.name.charAt(0).toUpperCase() }}
+          </div>
+          <div class="min-w-0 flex-1">
+            <p class="text-sm font-bold text-slate-900 truncate">{{ user.name }}</p>
+            <p class="text-[11px] text-slate-500 truncate">{{ user.email }}</p>
+          </div>
+          <span :class="roleColors[user.role]" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize shrink-0">
+            {{ user.role }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between text-[11px] text-slate-500 border-t border-slate-100 pt-2">
+          <span>{{ user.phone ?? '—' }}</span>
+          <span class="font-mono text-slate-400">ID #{{ user.id }} · {{ new Date(user.created_at).toLocaleDateString() }}</span>
+        </div>
+      </div>
+      <p v-if="!filteredUsers.length" class="text-center text-slate-500 text-sm py-10">No users found.</p>
+    </div>
+
+    <!-- Desktop: full table -->
+    <div class="hidden sm:block bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
           <thead>

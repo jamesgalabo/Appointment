@@ -1,32 +1,54 @@
 <template>
   <AppLayout page-title="All Reservations">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col gap-3 mb-6">
       <div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Room Reservations</h1>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Room Reservations</h1>
         <p class="text-xs text-slate-500 font-medium mt-0.5">All student room reservations across Kidapawan boarding houses</p>
       </div>
 
-      <div class="flex items-center gap-1.5 p-1 bg-white border border-slate-200/80 rounded-xl shadow-2xs">
+      <div class="flex items-center gap-1 p-1 bg-white border border-slate-200/80 rounded-xl shadow-2xs w-full sm:w-auto overflow-x-auto">
         <button
           v-for="st in ['all', 'pending', 'approved', 'cancelled']"
           :key="st"
           @click="filterStatus = st"
           :class="filterStatus === st ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'"
-          class="px-3 py-1.5 rounded-lg text-xs capitalize transition"
+          class="px-3 py-1.5 rounded-lg text-xs capitalize transition shrink-0"
         >
           {{ st }}
         </button>
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+    <!-- Mobile: card list -->
+    <div class="sm:hidden space-y-3">
+      <div v-for="res in filteredReservations" :key="res.id" class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-slate-900 truncate">{{ res.student?.name ?? '—' }}</p>
+            <p class="text-[11px] text-slate-500 truncate">{{ res.room?.boarding_house?.name ?? '—' }} · Room {{ res.room?.room_number ?? '—' }}</p>
+          </div>
+          <span :class="statusColors[res.status]" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize shrink-0">
+            ● {{ res.status }}
+          </span>
+        </div>
+        <div class="flex items-center justify-between text-[11px] border-t border-slate-100 pt-2 mt-2">
+          <span class="font-mono text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200/60">#{{ res.qr_reference ?? res.id }}</span>
+          <span class="text-slate-500">{{ res.intended_move_in_date }}</span>
+          <span class="font-bold text-indigo-700">&#x20B1;{{ formatNumber(res.room?.monthly_rent) }}</span>
+        </div>
+      </div>
+      <p v-if="!filteredReservations.length" class="text-center text-slate-500 text-sm py-10">No reservations match the selected status.</p>
+    </div>
+
+    <!-- Desktop: full table -->
+    <div class="hidden sm:block bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
           <thead>
             <tr class="bg-slate-50/80 border-b border-slate-200 text-slate-500 uppercase tracking-wider">
               <th class="px-5 py-3.5 text-left font-bold">QR Ref / ID</th>
               <th class="px-5 py-3.5 text-left font-bold">Student Name</th>
-              <th class="px-5 py-3.5 text-left font-bold">Boarding House & Room</th>
+              <th class="px-5 py-3.5 text-left font-bold">Boarding House &amp; Room</th>
               <th class="px-5 py-3.5 text-left font-bold">Move-in Date</th>
               <th class="px-5 py-3.5 text-left font-bold">Monthly Rent</th>
               <th class="px-5 py-3.5 text-right font-bold">Status</th>
@@ -45,7 +67,7 @@
                 <div class="text-[11px] text-slate-400">Room {{ res.room?.room_number ?? '—' }}</div>
               </td>
               <td class="px-5 py-3.5 text-slate-700 font-medium">{{ res.intended_move_in_date }}</td>
-              <td class="px-5 py-3.5 font-bold text-indigo-700">₱{{ formatNumber(res.room?.monthly_rent) }}</td>
+              <td class="px-5 py-3.5 font-bold text-indigo-700">&#x20B1;{{ formatNumber(res.room?.monthly_rent) }}</td>
               <td class="px-5 py-3.5 text-right">
                 <span
                   :class="statusColors[res.status]"

@@ -1,30 +1,30 @@
 <template>
   <AppLayout page-title="Admin Dashboard">
     <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col gap-3 mb-6">
       <div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Admin Dashboard</h1>
         <p class="text-xs text-slate-500 font-medium mt-0.5">KidaBoard Platform Overview • Kidapawan City</p>
       </div>
       <Link
         href="/admin/reports"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition"
+        class="inline-flex items-center justify-center sm:self-start gap-2 w-full sm:w-auto px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition"
       >
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18 20V10M12 20V4M6 20v-6" /></svg> View Reports & Analytics
       </Link>
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
-      <div v-for="stat in statCards" :key="stat.label" class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400">{{ stat.label }}</span>
-          <div class="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
-            <svg class="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" :d="statIconPath(stat.iconKey)" /></svg>
+    <div class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-7">
+      <div v-for="stat in statCards" :key="stat.label" class="bg-white rounded-2xl p-3.5 sm:p-5 border border-slate-200/80 shadow-xs hover:shadow-md transition">
+        <div class="flex items-center justify-between mb-2 sm:mb-3">
+          <span class="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 leading-tight pr-1">{{ stat.label }}</span>
+          <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+            <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" :d="statIconPath(stat.iconKey)" /></svg>
           </div>
         </div>
-        <div class="text-3xl font-black text-slate-900 tracking-tight">{{ stat.value }}</div>
-        <p class="text-[11px] mt-1 font-semibold" :class="stat.subColor">{{ stat.sub }}</p>
+        <div class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{{ stat.value }}</div>
+        <p class="text-[10px] sm:text-[11px] mt-1 font-semibold leading-tight hidden sm:block" :class="stat.subColor">{{ stat.sub }}</p>
       </div>
     </div>
 
@@ -71,8 +71,8 @@
     </div>
 
     <!-- Occupancy Bar -->
-    <div class="bg-white rounded-2xl p-6 border border-slate-200/80 shadow-xs">
-      <div class="flex items-center justify-between mb-4">
+    <div class="bg-white rounded-2xl p-4 sm:p-6 border border-slate-200/80 shadow-xs">
+      <div class="flex flex-wrap items-start sm:items-center justify-between gap-2 mb-4">
         <h3 class="font-extrabold text-slate-900 text-sm">Room Occupancy Overview</h3>
         <span class="text-xs text-slate-600 font-semibold">{{ stats.available_rooms }} available / {{ stats.occupied_rooms }} occupied</span>
       </div>

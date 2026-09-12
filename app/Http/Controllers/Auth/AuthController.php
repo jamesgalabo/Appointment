@@ -1,4 +1,4 @@
-<?php
+    <?php
 
 namespace App\Http\Controllers\Auth;
 
@@ -94,9 +94,9 @@ class AuthController extends Controller
             'updated_at'  => now(),
         ]);
 
-        // Send OTP email (safely handle network/SMTP timeouts)
+        // Queue OTP email so the HTTP request is never blocked by SMTP
         try {
-            Mail::to($data['email'])->send(new VerificationOtpMail($otp, $data['name']));
+            Mail::to($data['email'])->queue(new VerificationOtpMail($otp, $data['name']));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error("Registration OTP Email failed for {$data['email']}: {$e->getMessage()} | OTP is: {$otp}");
         }
@@ -187,7 +187,7 @@ class AuthController extends Controller
             ]);
 
         try {
-            Mail::to($request->email)->send(new VerificationOtpMail($otp, $payload['name']));
+            Mail::to($request->email)->queue(new VerificationOtpMail($otp, $payload['name']));
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error("Resend OTP Email failed for {$request->email}: {$e->getMessage()} | OTP is: {$otp}");
         }

@@ -1,25 +1,47 @@
 <template>
   <AppLayout page-title="All Appointments">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col gap-3 mb-6">
       <div>
-        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Viewing Appointments</h1>
+        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Viewing Appointments</h1>
         <p class="text-xs text-slate-500 font-medium mt-0.5">Platform-wide student viewing visits and property appointments</p>
       </div>
 
-      <div class="flex items-center gap-1.5 p-1 bg-white border border-slate-200/80 rounded-xl shadow-2xs">
+      <div class="flex items-center gap-1 p-1 bg-white border border-slate-200/80 rounded-xl shadow-2xs w-full sm:w-auto overflow-x-auto">
         <button
           v-for="st in ['all', 'pending', 'approved', 'completed']"
           :key="st"
           @click="filterStatus = st"
           :class="filterStatus === st ? 'bg-indigo-600 text-white font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'"
-          class="px-3 py-1.5 rounded-lg text-xs capitalize transition"
+          class="px-3 py-1.5 rounded-lg text-xs capitalize transition shrink-0"
         >
           {{ st }}
         </button>
       </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
+    <!-- Mobile: card list -->
+    <div class="sm:hidden space-y-3">
+      <div v-for="apt in filteredAppointments" :key="apt.id" class="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs">
+        <div class="flex items-start justify-between gap-2 mb-2">
+          <div>
+            <p class="text-xs font-bold text-slate-900">{{ apt.student?.name ?? '—' }}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">{{ apt.boarding_house?.name ?? '—' }}</p>
+          </div>
+          <span :class="statusColors[apt.status]" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border capitalize shrink-0">
+            ● {{ apt.status }}
+          </span>
+        </div>
+        <div class="flex items-center gap-4 text-[11px] text-slate-500 border-t border-slate-100 pt-2 mt-2">
+          <span class="font-mono text-slate-400">#{{ apt.id }}</span>
+          <span>{{ apt.scheduled_date }}</span>
+          <span>{{ apt.time_slot }}</span>
+        </div>
+      </div>
+      <p v-if="!filteredAppointments.length" class="text-center text-slate-500 text-sm py-10">No appointments match the selected filter.</p>
+    </div>
+
+    <!-- Desktop: full table -->
+    <div class="hidden sm:block bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs">
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
           <thead>

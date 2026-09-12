@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 text-slate-800 flex antialiased font-sans">
+  <div class="min-h-screen bg-slate-50 text-slate-800 flex antialiased font-sans overflow-x-hidden">
     <!-- Mobile sidebar overlay -->
     <div
       v-if="sidebarOpen"
@@ -10,7 +10,7 @@
     <!-- Sidebar � sticky, always full viewport height -->
     <aside
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-      class="fixed top-0 left-0 z-40 h-screen w-64 bg-white border-r border-slate-200/80 flex flex-col lg:sticky lg:translate-x-0 transition-transform duration-200 ease-in-out shadow-xs shrink-0 select-none"
+      class="fixed top-0 left-0 z-40 h-screen w-64 bg-white border-r border-slate-200/80 flex flex-col lg:translate-x-0 transition-transform duration-200 ease-in-out shadow-xs shrink-0 select-none"
     >
       <!-- Logo header -->
       <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100 shrink-0">
@@ -37,6 +37,7 @@
             v-for="item in group.items"
             :key="item.href"
             :href="item.href"
+            @click="sidebarOpen = false"
             :class="isActive(item.href)
               ? 'bg-indigo-600 text-white font-semibold shadow-sm shadow-indigo-600/20'
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 font-medium'"
@@ -91,43 +92,44 @@
     </aside>
 
     <!-- Main content container -->
-    <div class="flex-1 flex flex-col min-w-0 min-h-screen">
+    <div class="flex-1 flex flex-col min-w-0 min-h-screen lg:pl-64">
       <!-- Top navbar -->
-      <header class="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-14 flex items-center justify-between px-4 sm:px-6 shadow-2xs shrink-0">
-        <div class="flex items-center gap-3">
-          <!-- Mobile sidebar toggle -->
-          <button
-            @click="sidebarOpen = !sidebarOpen"
-            class="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"
-          >
-            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </button>
+      <header class="sticky top-0 z-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 h-14 flex items-center gap-2 px-4 sm:px-6 shadow-2xs shrink-0">
+        <!-- Mobile sidebar toggle -->
+        <button
+          @click="sidebarOpen = !sidebarOpen"
+          class="lg:hidden p-2 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition shrink-0"
+        >
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
 
-          <!-- Breadcrumbs -->
-          <div class="flex items-center gap-2 text-xs text-slate-500">
-            <span class="font-bold text-slate-800">KidaBoard</span>
-            <span class="text-slate-300">/</span>
-            <span class="font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{{ pageTitle }}</span>
-          </div>
+        <!-- Breadcrumbs -->
+        <div class="flex items-center gap-1.5 text-xs text-slate-500 min-w-0">
+          <span class="font-bold text-slate-800 hidden sm:inline shrink-0">KidaBoard</span>
+          <span class="text-slate-300 hidden sm:inline">/</span>
+          <span class="font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md truncate">{{ pageTitle }}</span>
         </div>
+
+        <!-- Spacer -->
+        <div class="flex-1 min-w-0"></div>
 
         <!-- Flash alert -->
         <transition name="fade">
-          <div v-if="flash.success" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs">
+          <div v-if="flash.success" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs max-w-[180px] sm:max-w-xs shrink-0">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0"></span>
-            <span class="truncate max-w-[220px] sm:max-w-md">{{ flash.success }}</span>
+            <span class="truncate">{{ flash.success }}</span>
           </div>
-          <div v-else-if="flash.error" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold shadow-xs">
+          <div v-else-if="flash.error" class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold shadow-xs max-w-[180px] sm:max-w-xs shrink-0">
             <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping shrink-0"></span>
-            <span class="truncate max-w-[220px] sm:max-w-md">{{ flash.error }}</span>
+            <span class="truncate">{{ flash.error }}</span>
           </div>
         </transition>
 
         <!-- Right action tools -->
-        <div class="flex items-center gap-2.5">
-          <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100/80 border border-slate-200/80 text-xs font-medium text-slate-600">
+        <div class="flex items-center gap-2 shrink-0">
+          <div class="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100/80 border border-slate-200/80 text-xs font-medium text-slate-600">
             <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
@@ -143,7 +145,7 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            Find Houses
+            <span class="hidden sm:inline">Find Houses</span>
           </Link>
 
           <!-- Quick link for owners to manage rooms -->
@@ -155,13 +157,13 @@
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
             </svg>
-            Manage Rooms
+            <span class="hidden sm:inline">Manage Rooms</span>
           </Link>
         </div>
       </header>
 
       <!-- Main body slot -->
-      <main class="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+      <main class="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto overflow-x-hidden">
         <slot />
       </main>
 
